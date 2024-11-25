@@ -21,6 +21,20 @@ ostream& operator<<(ostream& os, const Room& room) {
   return os;
 }
 
+bool DungeonGeneration::overlapCheck(const Room& room)
+{
+  for(const Room& existingRoom : rooms) {
+    if (!(room.x + room.width <= existingRoom.x - 1 ||
+          room.x >= existingRoom.x + existingRoom.width + 1 ||
+          room.y + room.height <= existingRoom.y - 1||
+          room.y >= existingRoom.y + existingRoom.height + 1)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
 void DungeonGeneration::GenerateRooms(int maxWidth, int maxHeight) {
   // generate random weight
   random_device rd;   // Seed for random number engine
@@ -30,15 +44,25 @@ void DungeonGeneration::GenerateRooms(int maxWidth, int maxHeight) {
   uniform_int_distribution<int> xDist(1, gridWidth - maxWidth - 1);
   uniform_int_distribution<int> yDist(1, gridHeight - maxHeight - 1);
 
-  for (int i = 0; i < numRooms; i++) {
+  int MAX_ATTEMPTS = 100;
+  int attempts = 0;
+  while(rooms.size() < numRooms && attempts < MAX_ATTEMPTS)
+
+  {
     int x = xDist(gen);
     int y = yDist(gen);
     int width = widthDist(gen);
     int height = heightDist(gen);
 
     Room newRoom = {width, height, x, y};
-    rooms.push_back(newRoom);
+    if(!overlapCheck(newRoom))
+    {
+      rooms.push_back(newRoom);
+    }
+    attempts++;
   }
+
+  numRooms = rooms.size();
 
   for (const Room& room: rooms) {
     for (int i = room.x; i < room.x + room.width; i++) {
