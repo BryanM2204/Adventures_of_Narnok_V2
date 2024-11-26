@@ -7,8 +7,9 @@
 #include "../MST/Prim.h"
 #include <random>
 #include <iostream>
+#include <unordered_map>
 
-DungeonGeneration::DungeonGeneration(int gridWidth, int gridHeight, int numRooms, Graph& graph) : dungeonGrid(gridWidth, std::vector<char>(gridHeight, ' ')), graph(graph){
+DungeonGeneration::DungeonGeneration(int gridWidth, int gridHeight, int numRooms, Graph& graph) : dungeonGrid(gridWidth, std::vector<int>(gridHeight, OPEN)), graph(graph){
   this->numRooms = numRooms;
   this->gridWidth = gridWidth;
   this->gridHeight = gridHeight;
@@ -70,38 +71,38 @@ void DungeonGeneration::GenerateRooms(int maxWidth, int maxHeight) {
         // if the i and j values are within the grid's dimensions and are not the edges of the room
         if (i >= 0 && i < gridWidth && j >= 0 && j < gridHeight) {
           // add a floor tile
-          dungeonGrid[i][j] = '.';
+          dungeonGrid[i][j] = FLOOR;
         }
         // if the x value is on the left side of the room
         if (i == room.x) {
           if (j == room.y) {
-            dungeonGrid[i-1][j-1] = '|';
+            dungeonGrid[i-1][j-1] = LEFT_CORNER;
           } else if (j == room.y + room.height - 1) {
-            dungeonGrid[i-1][j+1] = '|';
+            dungeonGrid[i-1][j+1] = RIGHT_CORNER;
           }
           // add a wall i-1 from the room
-          dungeonGrid[i-1][j] = '-';
+          dungeonGrid[i-1][j] = H_WALL_N;
 
           // if I value is at the edge of the room on the right
         } else if (i == room.x + room.width - 1){
           if (j == room.y){
-            dungeonGrid[i+1][j-1] = '|';
+            dungeonGrid[i+1][j-1] = BOTTOM_LEFT_CORNER;
           } else if (j == room.y + room.height - 1) {
-            dungeonGrid[i+1][j+1] = '|';
+            dungeonGrid[i+1][j+1] = BOTTOM_RIGHT_CORNER;
           }
           // add a wall i+1 from the room
-          dungeonGrid[i+1][j] = '-';
+          dungeonGrid[i+1][j] = H_WALL_S;
         }
 
         // if the y value is on the top of the room
         if (j == room.y) {
           // add a wall j-1 from the room
-          dungeonGrid[i][j-1] = '|';
+          dungeonGrid[i][j-1] = V_WALL_W;
 
           // if the y value is on the bottom edge of the room
         } else if (j == room.y + room.height - 1) {
           // add a wall j+1 from the room
-          dungeonGrid[i][j+1] = '|';
+          dungeonGrid[i][j+1] = V_WALL_E;
         }
       }
     }
@@ -179,50 +180,50 @@ void DungeonGeneration::CreateHallway(int u, int v)
 
   if(x1 > x2 && y1 > y2) {
     for(int i = x2; i <= x1; i++) {
-      if(dungeonGrid[i][y2] != '.')
-        dungeonGrid[i][y2] = 'X';
+      if(dungeonGrid[i][y2] != FLOOR)
+        dungeonGrid[i][y2] = FLOOR;
     }
     for(int i = y2; i <= y1; i++) {
-      if(dungeonGrid[x1][i] != '.')
-        dungeonGrid[x1][i] = 'Y';
+      if(dungeonGrid[x1][i] != FLOOR)
+        dungeonGrid[x1][i] = FLOOR;
     }
   } else if(x1 > x2 && y2 > y1) {
     for(int i = x2; i <= x1; i++) {
-      if(dungeonGrid[i][y1] != '.')
-        dungeonGrid[i][y1] = 'X';
+      if(dungeonGrid[i][y1] != FLOOR)
+        dungeonGrid[i][y1] = FLOOR;
     }
     for(int i = y1; i <= y2; i++) {
-      if(dungeonGrid[x2][i] != '.')
-        dungeonGrid[x2][i] = 'Y';
+      if(dungeonGrid[x2][i] != FLOOR)
+        dungeonGrid[x2][i] = FLOOR;
     }
   } else if(x2 > x1 && y1 > y2) {
     for(int i = x1; i <= x2; i++) {
-      if(dungeonGrid[i][y1] != '.')
-        dungeonGrid[i][y1] = 'X';
+      if(dungeonGrid[i][y1] != FLOOR)
+        dungeonGrid[i][y1] = FLOOR;
     }
     for(int i = y2; i <= y1; i++) {
-      if(dungeonGrid[x2][i] != '.')
-        dungeonGrid[x2][i] = 'Y';
+      if(dungeonGrid[x2][i] != FLOOR)
+        dungeonGrid[x2][i] = FLOOR;
     }
   }
   else if(x2 > x1 && y2 > y1) {
     for(int i = x1; i <= x2; i++) {
-      if(dungeonGrid[i][y1] != '.')
-        dungeonGrid[i][y1] = 'X';
+      if(dungeonGrid[i][y1] != FLOOR)
+        dungeonGrid[i][y1] = FLOOR;
     }
     for(int i = y1; i <= y2; i++) {
-      if(dungeonGrid[x2][i] != '.')
-        dungeonGrid[x2][i] = 'Y';
+      if(dungeonGrid[x2][i] != FLOOR)
+        dungeonGrid[x2][i] = FLOOR;
     }
   } else if (y1 == y2) {
     for(int i = std::min(x1, x2); i <= std::max(x1, x2); i++) {
-      if(dungeonGrid[i][y1] != '.')
-        dungeonGrid[i][y1] = 'X';
+      if(dungeonGrid[i][y1] != FLOOR)
+        dungeonGrid[i][y1] = FLOOR;
     }
   } else {
     for(int i = std::min(y1, y2); i <= std::max(y1, y2); i++) {
-      if(dungeonGrid[x1][i] != '.')
-        dungeonGrid[x1][i] = 'X';
+      if(dungeonGrid[x1][i] != FLOOR)
+        dungeonGrid[x1][i] = FLOOR;
     }
   }
 }
@@ -231,10 +232,27 @@ void DungeonGeneration::CreateHallway(int u, int v)
 
 void DungeonGeneration::DisplayDungeon() {
   // Print out the dungeon
+  unordered_map<int, char> tileChar = {
+    {OPEN, ' '},
+    {FLOOR, '.'},
+    {H_WALL_N, '-'},
+    {H_WALL_S, '-'},
+    {V_WALL_E, '|'},
+    {V_WALL_W, '|'},
+    {LEFT_CORNER, 'C'},
+    {RIGHT_CORNER, 'C'},
+    {BOTTOM_LEFT_CORNER, 'C'},
+    {BOTTOM_RIGHT_CORNER, 'C'}
+  };
+
   for (int i = 0; i < gridWidth; i++) {
     for (int j = 0; j < gridHeight; j++) {
-      cout << dungeonGrid[i][j] << " ";
+      cout << (tileChar.count(dungeonGrid[i][j]) ? tileChar[dungeonGrid[i][j]] : ' ');
     }
     cout << endl;
   }
+}
+
+const std::vector<std::vector<int>>& DungeonGeneration::get_dungeonGrid() {
+  return dungeonGrid;
 }

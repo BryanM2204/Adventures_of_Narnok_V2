@@ -4,10 +4,9 @@
 
 #include "Graph/graph.h"
 #include "Generation/DungeonGen.h"
-#include "MST/Prim.h"
 
 int main() {
-  int numNodes = 20;
+  int numNodes = 6;
 
 
   Graph graph(numNodes);

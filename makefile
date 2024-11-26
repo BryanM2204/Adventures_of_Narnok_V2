@@ -4,7 +4,7 @@ CFLAGS := -Wall -Wextra -g
 LDFLAGS := $(SFML_LIBS) -lstdc++
 
 # Player/player.cpp Dungeon/map.cpp Dungeon/DungeonGen/Leaf.cpp Dungeon/DungeonGen/Rectangle.cpp
-SRCS := main.cpp Player/player.cpp Dungeon/map/map.cpp
+SRCS := main.cpp Player/player.cpp Dungeon/map/map.cpp Dungeon/DungeonGeneration/Graph/graph.cpp Dungeon/DungeonGeneration/MST/Prim.cpp Dungeon/DungeonGeneration/Generation/DungeonGen.cpp
 OBJS := $(SRCS:.cpp=.o)
 TARGET := main
 

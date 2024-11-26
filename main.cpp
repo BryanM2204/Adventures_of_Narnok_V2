@@ -1,6 +1,8 @@
 #include <SFML/Graphics.hpp>
 #include "Player/player.h"
 #include "Dungeon/map/map.h"
+#include "Dungeon/DungeonGeneration/Generation/DungeonGen.h"
+#include "Dungeon/DungeonGeneration/Graph/graph.h"
 
 int main()
 {
@@ -17,30 +19,28 @@ int main()
         return 1;
     }
 
-    // define the level with an array of tile indices
-    const int level[] =
-    {
-        0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0,
-        1, 1, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3,
-        0, 1, 0, 0, 2, 0, 3, 3, 3, 0, 1, 1, 1, 0, 0, 0,
-        0, 1, 1, 0, 3, 3, 3, 0, 0, 0, 1, 1, 1, 2, 0, 0,
-        0, 0, 1, 0, 3, 0, 2, 2, 0, 0, 1, 1, 1, 1, 2, 0,
-        2, 0, 1, 0, 3, 0, 2, 2, 2, 0, 1, 1, 1, 1, 1, 1,
-        0, 0, 1, 0, 3, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1,
-    };
+    int numNodes = 20;
+    Graph graph(numNodes);
+    DungeonGeneration generation(50, 50, numNodes, graph);
+    generation.GenerateRooms(8, 8);
+    generation.CreateGraph();
+    generation.ConnectRooms();
+    generation.DisplayDungeon();
+
+
+    std::vector<std::vector<int>> level = generation.get_dungeonGrid();
 
     // create the tile map from the level definition
     TileMap map;
-    if (!map.load("./Assets/Sprites/TEST.png", sf::Vector2u(32, 32), level, 16, 8))
+    if (!map.load("./Assets/Sprites/DungeonTileset.png", sf::Vector2u(32, 32), level))
         return -1;
 
     sf::View view(sf::FloatRect(0, 0, window.getSize().x, window.getSize().y));
 
-    view.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
-    view.zoom(0.65f);
-    window.setView(view);
-    map.setScale(2, 2);
+    // view.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
+    // view.zoom(0.65f);
+    // window.setView(view);
+    // map.setScale(2, 2);
 
     sf::IntRect rightFace(0, 0, 32, 32);
     sf::IntRect leftFace(32, 0, 32, 32);
