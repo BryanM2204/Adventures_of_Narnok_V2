@@ -1,2 +1,4 @@
 Rogue-Like Dungeon Crawler - Adventures of Narnok!
+
+V1 of this project involved using a pre-existing dungeon generator algorithm. In V2 I decided to build my own generator from the ground up to test my DSA knowledge.
 @BryanM2204
